@@ -190,7 +190,7 @@ vibekit/
 ### Social Authentication
 - **Google OAuth 2.0** - Ready to use
 - **Apple Sign In** - iOS/macOS integration
-- **Facebook Login** - Configuration ready
+- **Facebook Login** - (Coming Soon)
 
 ### Session Management
 - MongoDB session store for scalability
@@ -226,7 +226,6 @@ vibekit/
 - Welcome emails
 - Email verification
 - Password reset
-- Order confirmations
 - Subscription notifications
 
 ## ☁️ File Storage
@@ -254,9 +253,7 @@ vibekit/
 - User dashboard
 - Account settings
 - Subscription management
-- Admin panel
-- Product catalog
-- Order history
+- Admin product page (configure Stripe subscriptions)
 
 ## 🛡️ Security Features
 
@@ -304,7 +301,6 @@ npm test
 
 ### Social Login Setup
 Detailed guides available in `/backend/docs/`:
-- [Apple Sign In Setup](./backend/docs/apple_setup.md)
 - [Google OAuth Setup](./backend/docs/social-login-setup.md)
 
 ### Environment Configuration

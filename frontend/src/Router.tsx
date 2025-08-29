@@ -5,6 +5,7 @@ import { ProtectedRoute } from './components/protected-route'
 import { AdminProtectedRoute } from './components/admin-protected-route'
 import { useAuth } from './contexts/AuthContext'
 import NotMatch from './pages/NotMatch'
+import Landing from './pages/Landing'
 import Dashboard from './pages/Dashboard'
 import Sample from './pages/Sample'
 import ComingSoon from './pages/ComingSoon'
@@ -59,6 +60,9 @@ export default function Router() {
     
     return (
         <Routes>
+            {/* Landing page - accessible to everyone */}
+            <Route path="/" element={<Landing />} />
+            
             <Route element={<AuthLayout />}>
                 <Route path="login" element={
                     <PublicRoute>

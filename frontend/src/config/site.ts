@@ -5,7 +5,7 @@ export const siteConfig = {
   description:
     "A fully functional full-stack app template for vibe coding. Complete with authentication, email service, S3 uploads, Stripe integration, and modern tech stack. Perfect for rapid prototyping and production-ready applications.",
   links: {
-    twitter: "https://twitter.com/vibekit",
-    github: "https://github.com/vibekit/vibekit",
+    twitter: "https://x.com/SSmith4296",
+    github: "https://github.com/blibbers/vibekit",
   },
 }
