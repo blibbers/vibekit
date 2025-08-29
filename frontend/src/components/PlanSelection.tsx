@@ -17,7 +17,7 @@ export default function PlanSelection({ onPlanSelect, showCurrentPlan = true }: 
   const [currentSubscription, setCurrentSubscription] = useState<CurrentSubscriptionResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isUpgrading, setIsUpgrading] = useState<string | null>(null)
-  const { user } = useAuth()
+  const { } = useAuth()
 
   useEffect(() => {
     fetchData()

@@ -40,7 +40,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const { user } = await authApi.getCurrentUser()
       setUser(user)
-    } catch (error) {
+    } catch (error: any) {
       // Only set user to null if it's actually a 401, not a network error
       if (error?.response?.status === 401) {
         setUser(null)

@@ -15,6 +15,9 @@ router.get('/invoices', isAuthenticated, subscriptionController.getInvoices);
 // Get payment methods
 router.get('/payment-methods', isAuthenticated, subscriptionController.getPaymentMethods);
 
+// Create setup intent for adding payment method
+router.post('/payment-methods/setup-intent', isAuthenticated, subscriptionController.createSetupIntent);
+
 // Add a payment method
 router.post(
   '/payment-methods',

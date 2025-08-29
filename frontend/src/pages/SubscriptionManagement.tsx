@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { 
   Calendar, 
@@ -11,9 +11,7 @@ import {
   ChevronDown,
   Package,
   Receipt,
-  AlertCircle,
-  CheckCircle2,
-  Clock
+  CheckCircle2
 } from 'lucide-react'
 import { 
   subscriptionApi, 
@@ -40,10 +38,10 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
 import PlanSelection from '@/components/PlanSelection'
+import AddPaymentMethodModal from '@/components/AddPaymentMethodModal'
 import { cn } from '@/lib/utils'
 
 export default function SubscriptionManagement() {
@@ -57,6 +55,7 @@ export default function SubscriptionManagement() {
   const [settingDefaultPaymentMethod, setSettingDefaultPaymentMethod] = useState<string | null>(null)
   const [paymentMethodToRemove, setPaymentMethodToRemove] = useState<PaymentMethod | null>(null)
   const [showRemoveDialog, setShowRemoveDialog] = useState(false)
+  const [showAddPaymentMethodModal, setShowAddPaymentMethodModal] = useState(false)
   
   // Collapsible sections state
   const [openSections, setOpenSections] = useState({
@@ -523,22 +522,31 @@ export default function SubscriptionManagement() {
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent className="pt-0">
-                {subscription?.hasActiveSubscription && (
-                  <Alert className="mb-4">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      To add a new payment method, please upgrade or change your plan.
-                    </AlertDescription>
-                  </Alert>
-                )}
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-muted-foreground">
+                      Manage your payment methods for subscriptions
+                    </p>
+                    <Button
+                      size="sm"
+                      onClick={() => setShowAddPaymentMethodModal(true)}
+                    >
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      Add Payment Method
+                    </Button>
+                  </div>
 
                 {paymentMethods && paymentMethods.paymentMethods.length > 0 ? (
                   <div className="space-y-3">
                     {paymentMethods.paymentMethods.map((method) => {
                       const isDefault = paymentMethods.defaultPaymentMethod === method.id
-                      const canRemove = subscription?.hasActiveSubscription 
-                        ? paymentMethods.paymentMethods.length > 1 
-                        : true
+                      // Can only remove if:
+                      // 1. It's not the default payment method
+                      // 2. AND either there's no active subscription OR there are multiple payment methods
+                      const canRemove = !isDefault && (
+                        !subscription?.hasActiveSubscription || 
+                        paymentMethods.paymentMethods.length > 1
+                      )
                       
                       return (
                         <div key={method.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg border gap-3">
@@ -592,7 +600,7 @@ export default function SubscriptionManagement() {
                               </Button>
                             ) : (
                               <span className="text-xs text-muted-foreground px-2">
-                                Required
+                                {isDefault ? 'Default' : 'Required'}
                               </span>
                             )}
                           </div>
@@ -609,6 +617,7 @@ export default function SubscriptionManagement() {
                     </p>
                   </div>
                 )}
+                </div>
               </CardContent>
             </CollapsibleContent>
           </Collapsible>
@@ -663,6 +672,13 @@ export default function SubscriptionManagement() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Add Payment Method Modal */}
+      <AddPaymentMethodModal 
+        isOpen={showAddPaymentMethodModal}
+        onClose={() => setShowAddPaymentMethodModal(false)}
+        onSuccess={refreshPaymentMethods}
+      />
     </div>
   )
 }

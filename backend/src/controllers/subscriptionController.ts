@@ -98,6 +98,36 @@ class SubscriptionController {
     });
   });
 
+  createSetupIntent = asyncHandler(async (req: AuthRequest, res: Response) => {
+    if (!req.user) {
+      throw new AppError('User not found', 404);
+    }
+
+    // Create Stripe customer if one doesn't exist
+    let customerId = req.user.stripeCustomerId;
+    if (!customerId) {
+      const customer = await stripeService.createCustomer(
+        req.user.email,
+        `${req.user.firstName} ${req.user.lastName}`
+      );
+      customerId = customer.id;
+      
+      // Update user with Stripe customer ID
+      await User.findByIdAndUpdate(req.user._id, { stripeCustomerId: customerId });
+    }
+
+    // Create setup intent for future payment method
+    const setupIntent = await stripe.setupIntents.create({
+      customer: customerId,
+      payment_method_types: ['card'],
+      usage: 'off_session',
+    });
+
+    res.json({
+      clientSecret: setupIntent.client_secret
+    });
+  });
+
   addPaymentMethod = asyncHandler(async (req: AuthRequest, res: Response) => {
     if (!req.user?.stripeCustomerId) {
       throw new AppError('No Stripe customer found', 400);

@@ -240,6 +240,11 @@ export const subscriptionApi = {
     return data
   },
 
+  async createSetupIntent(): Promise<{ clientSecret: string }> {
+    const { data } = await api.post('/subscriptions/payment-methods/setup-intent')
+    return data
+  },
+
   async addPaymentMethod(paymentMethodId: string): Promise<{ message: string; paymentMethod: PaymentMethod }> {
     const { data } = await api.post('/subscriptions/payment-methods', { paymentMethodId })
     return data
