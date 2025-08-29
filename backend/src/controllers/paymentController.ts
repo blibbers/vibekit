@@ -17,7 +17,7 @@ class PaymentController {
       currency,
       req.user.stripeCustomerId,
       {
-        userId: req.user._id.toString(),
+        userId: (req.user._id as any).toString(),
         ...metadata
       }
     );
@@ -46,7 +46,7 @@ class PaymentController {
       `${config.frontend.url}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       `${config.frontend.url}/checkout/cancel`,
       {
-        userId: req.user._id.toString()
+        userId: (req.user._id as any).toString()
       }
     );
 

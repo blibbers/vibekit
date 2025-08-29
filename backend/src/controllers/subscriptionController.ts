@@ -209,7 +209,7 @@ class SubscriptionController {
       cancel_url: cancelUrl,
       subscription_data: {
         metadata: {
-          userId: req.user._id.toString(),
+          userId: (req.user._id as any).toString(),
         }
       }
     });

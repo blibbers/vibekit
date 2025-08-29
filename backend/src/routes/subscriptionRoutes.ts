@@ -7,39 +7,39 @@ import { isAuthenticated } from '../middleware/auth';
 const router = Router();
 
 // Get current user's subscription details
-router.get('/current', isAuthenticated, subscriptionController.getCurrentSubscription);
+router.get('/current', isAuthenticated as any, subscriptionController.getCurrentSubscription);
 
 // Get subscription invoices
-router.get('/invoices', isAuthenticated, subscriptionController.getInvoices);
+router.get('/invoices', isAuthenticated as any, subscriptionController.getInvoices);
 
 // Get payment methods
-router.get('/payment-methods', isAuthenticated, subscriptionController.getPaymentMethods);
+router.get('/payment-methods', isAuthenticated as any, subscriptionController.getPaymentMethods);
 
 // Create setup intent for adding payment method
-router.post('/payment-methods/setup-intent', isAuthenticated, subscriptionController.createSetupIntent);
+router.post('/payment-methods/setup-intent', isAuthenticated as any, subscriptionController.createSetupIntent);
 
 // Add a payment method
 router.post(
   '/payment-methods',
-  isAuthenticated,
+  isAuthenticated as any,
   validate([body('paymentMethodId').notEmpty()]),
   subscriptionController.addPaymentMethod
 );
 
 // Remove a payment method
-router.delete('/payment-methods/:id', isAuthenticated, subscriptionController.removePaymentMethod);
+router.delete('/payment-methods/:id', isAuthenticated as any, subscriptionController.removePaymentMethod);
 
 // Set default payment method
 router.put(
   '/payment-methods/:id/default',
-  isAuthenticated,
+  isAuthenticated as any,
   subscriptionController.setDefaultPaymentMethod
 );
 
 // Create subscription checkout session (for plan upgrades/changes)
 router.post(
   '/checkout',
-  isAuthenticated,
+  isAuthenticated as any,
   validate([
     body('priceId').notEmpty().withMessage('Price ID is required'),
     body('successUrl').notEmpty().withMessage('Success URL is required').custom((value) => {
@@ -65,15 +65,15 @@ router.post(
 // Update subscription (change plan)
 router.put(
   '/change-plan',
-  isAuthenticated,
+  isAuthenticated as any,
   validate([body('priceId').notEmpty()]),
   subscriptionController.changePlan
 );
 
 // Cancel subscription
-router.post('/cancel', isAuthenticated, subscriptionController.cancelSubscription);
+router.post('/cancel', isAuthenticated as any, subscriptionController.cancelSubscription);
 
 // Resume subscription
-router.post('/resume', isAuthenticated, subscriptionController.resumeSubscription);
+router.post('/resume', isAuthenticated as any, subscriptionController.resumeSubscription);
 
 export default router;

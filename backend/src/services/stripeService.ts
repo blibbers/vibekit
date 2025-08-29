@@ -316,13 +316,18 @@ export class StripeService {
 
       // Update user subscription fields individually
       if (!user.subscription) {
-        user.subscription = {};
+        user.subscription = {
+          id: subscription.id,
+          status: subscription.status,
+          currentPeriodEnd: currentPeriodEnd,
+          plan: subscription.items.data[0]?.price.id || ''
+        };
+      } else {
+        user.subscription.id = subscription.id;
+        user.subscription.status = subscription.status;
+        user.subscription.currentPeriodEnd = currentPeriodEnd;
+        user.subscription.plan = subscription.items.data[0]?.price.id || '';
       }
-      
-      user.subscription.id = subscription.id;
-      user.subscription.status = subscription.status;
-      user.subscription.currentPeriodEnd = currentPeriodEnd;
-      user.subscription.plan = subscription.items.data[0]?.price.id || '';
       
       // Mark subscription as modified for Mongoose
       user.markModified('subscription');

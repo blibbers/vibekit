@@ -70,8 +70,7 @@ class ProductController {
       billingType = 'recurring',
       billingInterval = 'month',
       billingIntervalCount = 1,
-      features = [],
-      ...rest 
+      features = []
     } = req.body;
 
     let stripeProductId = null;

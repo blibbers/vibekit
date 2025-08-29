@@ -29,9 +29,9 @@ router.post(
   authController.login
 );
 
-router.post('/logout', isAuthenticated, authController.logout);
+router.post('/logout', isAuthenticated as any, authController.logout);
 
-router.get('/me', isAuthenticated, authController.getCurrentUser);
+router.get('/me', isAuthenticated as any, authController.getCurrentUser);
 
 router.post(
   '/forgot-password',
@@ -56,6 +56,6 @@ router.post(
   authController.verifyEmail
 );
 
-router.post('/resend-verification', isAuthenticated, authController.resendVerification);
+router.post('/resend-verification', isAuthenticated as any, authController.resendVerification);
 
 export default router;

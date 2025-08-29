@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { body } from 'express-validator';
 import { productController } from '../controllers/productController';
 import { validate } from '../middleware/validation';
-import { isAuthenticated, isAdmin } from '../middleware/auth';
+import { isAdmin } from '../middleware/auth';
 
 const router = Router();
 
@@ -11,7 +11,7 @@ router.get('/:id', productController.getProductById);
 
 router.post(
   '/',
-  isAdmin,
+  isAdmin as any,
   validate([
     body('name').notEmpty().trim(),
     body('description').notEmpty(),
@@ -30,7 +30,7 @@ router.post(
 
 router.put(
   '/:id', 
-  isAdmin, 
+  isAdmin as any, 
   validate([
     body('name').optional().notEmpty().trim(),
     body('description').optional().notEmpty(),
@@ -46,6 +46,6 @@ router.put(
   ]), 
   productController.updateProduct
 );
-router.delete('/:id', isAdmin, productController.deleteProduct);
+router.delete('/:id', isAdmin as any, productController.deleteProduct);
 
 export default router;

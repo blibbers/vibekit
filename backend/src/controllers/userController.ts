@@ -4,7 +4,7 @@ import { AppError, asyncHandler } from '../middleware/errorHandler';
 import { AuthRequest } from '../middleware/auth';
 
 class UserController {
-  getAllUsers = asyncHandler(async (req: AuthRequest, res: Response) => {
+  getAllUsers = asyncHandler(async (_req: AuthRequest, res: Response) => {
     const users = await User.find().select('-password');
     res.json({ users });
   });
@@ -51,7 +51,7 @@ class UserController {
       if (err) {
         throw new AppError('Logout failed', 500);
       }
-      req.session.destroy((err) => {
+      req.session.destroy((_err) => {
         res.clearCookie('connect.sid');
         res.json({ message: 'Account deleted successfully' });
       });
