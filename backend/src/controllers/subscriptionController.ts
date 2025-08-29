@@ -29,7 +29,7 @@ class SubscriptionController {
       try {
         // Get subscription details from Stripe
         const stripeSubscription = await stripe.subscriptions.retrieve(user.subscription.id, {
-          expand: ['items.data.price.product']
+          expand: ['items.data.price.product'],
         });
 
         // Get product details from our database
@@ -44,9 +44,11 @@ class SubscriptionController {
           currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
           currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
           cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
-          cancelAt: stripeSubscription.cancel_at ? new Date(stripeSubscription.cancel_at * 1000) : null,
+          cancelAt: stripeSubscription.cancel_at
+            ? new Date(stripeSubscription.cancel_at * 1000)
+            : null,
           stripeProduct: stripeSubscription.items.data[0]?.price.product,
-          price: stripeSubscription.items.data[0]?.price
+          price: stripeSubscription.items.data[0]?.price,
         };
       } catch (error) {
         console.error('Error fetching subscription from Stripe:', error);
@@ -59,7 +61,7 @@ class SubscriptionController {
     res.json({
       subscription: subscriptionDetails,
       currentProduct,
-      hasActiveSubscription: !!user.subscription?.id
+      hasActiveSubscription: !!user.subscription?.id,
     });
   });
 
@@ -69,11 +71,11 @@ class SubscriptionController {
     }
 
     const limit = parseInt(req.query.limit as string) || 10;
-    
+
     const invoices = await stripe.invoices.list({
       customer: req.user.stripeCustomerId,
       limit,
-      expand: ['data.subscription', 'data.payment_intent']
+      expand: ['data.subscription', 'data.payment_intent'],
     });
 
     res.json(invoices);
@@ -86,15 +88,17 @@ class SubscriptionController {
 
     const paymentMethods = await stripe.paymentMethods.list({
       customer: req.user.stripeCustomerId,
-      type: 'card'
+      type: 'card',
     });
 
     // Get customer to see default payment method
-    const customer = await stripe.customers.retrieve(req.user.stripeCustomerId) as Stripe.Customer;
+    const customer = (await stripe.customers.retrieve(
+      req.user.stripeCustomerId
+    )) as Stripe.Customer;
 
     res.json({
       paymentMethods: paymentMethods.data,
-      defaultPaymentMethod: customer.invoice_settings.default_payment_method
+      defaultPaymentMethod: customer.invoice_settings.default_payment_method,
     });
   });
 
@@ -111,7 +115,7 @@ class SubscriptionController {
         `${req.user.firstName} ${req.user.lastName}`
       );
       customerId = customer.id;
-      
+
       // Update user with Stripe customer ID
       await User.findByIdAndUpdate(req.user._id, { stripeCustomerId: customerId });
     }
@@ -124,7 +128,7 @@ class SubscriptionController {
     });
 
     res.json({
-      clientSecret: setupIntent.client_secret
+      clientSecret: setupIntent.client_secret,
     });
   });
 
@@ -137,14 +141,14 @@ class SubscriptionController {
 
     // Attach payment method to customer
     await stripe.paymentMethods.attach(paymentMethodId, {
-      customer: req.user.stripeCustomerId
+      customer: req.user.stripeCustomerId,
     });
 
     const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId);
 
     res.json({
       message: 'Payment method added successfully',
-      paymentMethod
+      paymentMethod,
     });
   });
 
@@ -154,7 +158,7 @@ class SubscriptionController {
     await stripe.paymentMethods.detach(paymentMethodId);
 
     res.json({
-      message: 'Payment method removed successfully'
+      message: 'Payment method removed successfully',
     });
   });
 
@@ -167,12 +171,12 @@ class SubscriptionController {
 
     await stripe.customers.update(req.user.stripeCustomerId, {
       invoice_settings: {
-        default_payment_method: paymentMethodId
-      }
+        default_payment_method: paymentMethodId,
+      },
     });
 
     res.json({
-      message: 'Default payment method updated successfully'
+      message: 'Default payment method updated successfully',
     });
   });
 
@@ -191,7 +195,7 @@ class SubscriptionController {
         `${req.user.firstName} ${req.user.lastName}`
       );
       customerId = customer.id;
-      
+
       // Update user with Stripe customer ID
       await User.findByIdAndUpdate(req.user._id, { stripeCustomerId: customerId });
     }
@@ -201,22 +205,24 @@ class SubscriptionController {
       customer: customerId,
       payment_method_types: ['card'],
       mode: 'subscription',
-      line_items: [{
-        price: priceId,
-        quantity: 1,
-      }],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
       success_url: successUrl,
       cancel_url: cancelUrl,
       subscription_data: {
         metadata: {
           userId: (req.user._id as any).toString(),
-        }
-      }
+        },
+      },
     });
 
     res.json({
       sessionId: session.id,
-      url: session.url
+      url: session.url,
     });
   });
 
@@ -229,19 +235,21 @@ class SubscriptionController {
 
     // Get current subscription
     const subscription = await stripe.subscriptions.retrieve(req.user.subscription.id);
-    
+
     // Update subscription with new price
     const updatedSubscription = await stripe.subscriptions.update(req.user.subscription.id, {
-      items: [{
-        id: subscription.items.data[0].id,
-        price: priceId,
-      }],
+      items: [
+        {
+          id: subscription.items.data[0].id,
+          price: priceId,
+        },
+      ],
       proration_behavior: 'create_prorations',
     });
 
     res.json({
       message: 'Subscription plan changed successfully',
-      subscription: updatedSubscription
+      subscription: updatedSubscription,
     });
   });
 
@@ -251,12 +259,12 @@ class SubscriptionController {
     }
 
     const subscription = await stripe.subscriptions.update(req.user.subscription.id, {
-      cancel_at_period_end: true
+      cancel_at_period_end: true,
     });
 
     res.json({
       message: 'Subscription will be cancelled at the end of the current period',
-      subscription
+      subscription,
     });
   });
 
@@ -266,12 +274,12 @@ class SubscriptionController {
     }
 
     const subscription = await stripe.subscriptions.update(req.user.subscription.id, {
-      cancel_at_period_end: false
+      cancel_at_period_end: false,
     });
 
     res.json({
       message: 'Subscription resumed successfully',
-      subscription
+      subscription,
     });
   });
 }

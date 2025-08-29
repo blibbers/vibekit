@@ -153,11 +153,7 @@ export class StripeService {
     }
   }
 
-  async processRefund(
-    chargeId: string,
-    amount?: number,
-    reason?: string
-  ): Promise<Stripe.Refund> {
+  async processRefund(chargeId: string, amount?: number, reason?: string): Promise<Stripe.Refund> {
     try {
       const refund = await stripe.refunds.create({
         charge: chargeId,
@@ -181,39 +177,32 @@ export class StripeService {
     }
   }
 
-  async handleWebhook(
-    payload: string | Buffer,
-    signature: string
-  ): Promise<Stripe.Event> {
+  async handleWebhook(payload: string | Buffer, signature: string): Promise<Stripe.Event> {
     try {
-      const event = stripe.webhooks.constructEvent(
-        payload,
-        signature,
-        config.stripe.webhookSecret
-      );
+      const event = stripe.webhooks.constructEvent(payload, signature, config.stripe.webhookSecret);
 
       logger.info(`Processing webhook event: ${event.type}`);
 
       switch (event.type) {
         case 'payment_intent.succeeded':
-          await this.handlePaymentSuccess(event.data.object as Stripe.PaymentIntent);
+          await this.handlePaymentSuccess(event.data.object);
           break;
 
         case 'payment_intent.payment_failed':
-          await this.handlePaymentFailure(event.data.object as Stripe.PaymentIntent);
+          await this.handlePaymentFailure(event.data.object);
           break;
 
         case 'customer.subscription.created':
         case 'customer.subscription.updated':
-          await this.handleSubscriptionUpdate(event.data.object as Stripe.Subscription);
+          await this.handleSubscriptionUpdate(event.data.object);
           break;
 
         case 'customer.subscription.deleted':
-          await this.handleSubscriptionCancellation(event.data.object as Stripe.Subscription);
+          await this.handleSubscriptionCancellation(event.data.object);
           break;
 
         case 'invoice.payment_succeeded':
-          await this.handleInvoicePaymentSuccess(event.data.object as Stripe.Invoice);
+          await this.handleInvoicePaymentSuccess(event.data.object);
           break;
 
         default:
@@ -252,58 +241,72 @@ export class StripeService {
   private async handleSubscriptionUpdate(subscription: Stripe.Subscription) {
     try {
       // Extract customer ID - it could be a string or Customer object
-      const customerId = typeof subscription.customer === 'string' 
-        ? subscription.customer 
-        : subscription.customer.id;
-      
+      const customerId =
+        typeof subscription.customer === 'string'
+          ? subscription.customer
+          : subscription.customer.id;
+
       logger.info(`Updating subscription for customer: ${customerId}`);
-      
+
       // First try to find by stripe customer ID
       let user = await User.findOne({ stripeCustomerId: customerId });
-      
+
       // If not found by customer ID, try to find by userId from metadata
       if (!user && subscription.metadata?.userId) {
-        logger.info(`User not found by customer ID, trying metadata userId: ${subscription.metadata.userId}`);
+        logger.info(
+          `User not found by customer ID, trying metadata userId: ${subscription.metadata.userId}`
+        );
         user = await User.findById(subscription.metadata.userId);
-        
+
         // If found, update their stripe customer ID
         if (user) {
           user.stripeCustomerId = customerId;
           logger.info(`Updated user ${user.email} with stripe customer ID: ${customerId}`);
         }
       }
-      
+
       if (!user) {
-        logger.warn(`User not found for customer ID: ${customerId} or metadata userId: ${subscription.metadata?.userId}`);
+        logger.warn(
+          `User not found for customer ID: ${customerId} or metadata userId: ${subscription.metadata?.userId}`
+        );
         return;
       }
 
       // Debug the timestamp value
-      logger.info(`Raw current_period_end: ${subscription.current_period_end}, type: ${typeof subscription.current_period_end}`);
-      
+      logger.info(
+        `Raw current_period_end: ${subscription.current_period_end}, type: ${typeof subscription.current_period_end}`
+      );
+
       // Convert timestamp to date with robust validation
       let currentPeriodEnd: Date;
-      
+
       try {
-        if (typeof subscription.current_period_end === 'number' && subscription.current_period_end > 0) {
+        if (
+          typeof subscription.current_period_end === 'number' &&
+          subscription.current_period_end > 0
+        ) {
           // Convert Unix timestamp (seconds) to JavaScript Date (milliseconds)
           currentPeriodEnd = new Date(subscription.current_period_end * 1000);
-          
+
           // Validate the resulting date
           if (isNaN(currentPeriodEnd.getTime())) {
             throw new Error('Date conversion resulted in Invalid Date');
           }
-          
+
           // Sanity check: date should be in the future and reasonable (not more than 10 years ahead)
           const now = new Date();
           const tenYearsFromNow = new Date(now.getFullYear() + 10, now.getMonth(), now.getDate());
-          
+
           if (currentPeriodEnd < now || currentPeriodEnd > tenYearsFromNow) {
-            logger.warn(`Date seems unreasonable: ${currentPeriodEnd.toISOString()}, using fallback`);
+            logger.warn(
+              `Date seems unreasonable: ${currentPeriodEnd.toISOString()}, using fallback`
+            );
             throw new Error('Date outside reasonable range');
           }
-          
-          logger.info(`Converted timestamp ${subscription.current_period_end} to date: ${currentPeriodEnd.toISOString()}`);
+
+          logger.info(
+            `Converted timestamp ${subscription.current_period_end} to date: ${currentPeriodEnd.toISOString()}`
+          );
         } else {
           throw new Error('Invalid timestamp value');
         }
@@ -320,7 +323,7 @@ export class StripeService {
           id: subscription.id,
           status: subscription.status,
           currentPeriodEnd: currentPeriodEnd,
-          plan: subscription.items.data[0]?.price.id || ''
+          plan: subscription.items.data[0]?.price.id || '',
         };
       } else {
         user.subscription.id = subscription.id;
@@ -328,12 +331,14 @@ export class StripeService {
         user.subscription.currentPeriodEnd = currentPeriodEnd;
         user.subscription.plan = subscription.items.data[0]?.price.id || '';
       }
-      
+
       // Mark subscription as modified for Mongoose
       user.markModified('subscription');
-      
+
       await user.save();
-      logger.info(`Subscription updated successfully for user ${user.email}, status: ${subscription.status}`);
+      logger.info(
+        `Subscription updated successfully for user ${user.email}, status: ${subscription.status}`
+      );
     } catch (error) {
       logger.error('Error updating subscription:', error);
       throw error;
@@ -343,12 +348,13 @@ export class StripeService {
   private async handleSubscriptionCancellation(subscription: Stripe.Subscription) {
     try {
       // Extract customer ID - it could be a string or Customer object
-      const customerId = typeof subscription.customer === 'string' 
-        ? subscription.customer 
-        : subscription.customer.id;
-      
+      const customerId =
+        typeof subscription.customer === 'string'
+          ? subscription.customer
+          : subscription.customer.id;
+
       logger.info(`Cancelling subscription for customer: ${customerId}`);
-      
+
       const user = await User.findOne({ stripeCustomerId: customerId });
       if (!user) {
         logger.warn(`User not found for customer ID: ${customerId}`);

@@ -11,7 +11,11 @@ export const validate = (validations: ValidationChain[]) => {
     }
 
     const extractedErrors: any[] = [];
-    errors.array().map((err) => extractedErrors.push({ field: (err as any).param || err.type, message: err.msg }));
+    errors
+      .array()
+      .map((err) =>
+        extractedErrors.push({ field: (err as any).param || err.type, message: err.msg })
+      );
 
     return res.status(422).json({
       error: 'Validation failed',

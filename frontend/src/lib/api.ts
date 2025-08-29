@@ -31,6 +31,40 @@ export interface User {
   lastName: string
   role: 'user' | 'admin'
   isEmailVerified: boolean
+  profile: {
+    avatar?: string
+    bio?: string
+    phone?: string
+    address?: {
+      street?: string
+      city?: string
+      state?: string
+      country?: string
+      postalCode?: string
+    }
+  }
+  preferences: {
+    notifications: {
+      email: boolean
+      push: boolean
+    }
+    theme: 'light' | 'dark'
+    language: string
+  }
+  socialLogins?: {
+    apple?: {
+      id: string
+      email?: string
+    }
+    google?: {
+      id: string
+      email?: string
+    }
+    facebook?: {
+      id: string
+      email?: string
+    }
+  }
   subscription?: {
     id: string
     status: string
@@ -94,9 +128,22 @@ export interface CreateProductData {
 
 export interface UpdateProductData extends Partial<CreateProductData> {}
 
+export interface SocialProvidersResponse {
+  providers: {
+    apple: boolean;
+    google: boolean;
+    facebook: boolean;
+  };
+}
+
 export const authApi = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const { data } = await api.post<AuthResponse>('/auth/login', credentials)
+    return data
+  },
+
+  async getEnabledProviders(): Promise<SocialProvidersResponse> {
+    const { data } = await api.get<SocialProvidersResponse>('/auth/providers')
     return data
   },
 
@@ -277,6 +324,64 @@ export const subscriptionApi = {
 
   async resumeSubscription(): Promise<{ message: string; subscription: any }> {
     const { data } = await api.post('/subscriptions/resume')
+    return data
+  },
+}
+
+export interface UpdateProfileData {
+  firstName?: string
+  lastName?: string
+  phone?: string
+  profile?: {
+    bio?: string
+    address?: {
+      street?: string
+      city?: string
+      state?: string
+      country?: string
+      postalCode?: string
+    }
+  }
+}
+
+export interface UpdatePreferencesData {
+  notifications?: {
+    email?: boolean
+    push?: boolean
+  }
+  theme?: 'light' | 'dark'
+}
+
+export const userApi = {
+  async getProfile(): Promise<{ user: User }> {
+    const { data } = await api.get('/users/profile')
+    return data
+  },
+
+  async updateProfile(profileData: UpdateProfileData): Promise<{ user: User }> {
+    const { data } = await api.put('/users/profile', profileData)
+    return data
+  },
+
+  async uploadAvatar(file: File): Promise<{ user: User; avatarUrl: string }> {
+    const formData = new FormData()
+    formData.append('avatar', file)
+    
+    const { data } = await api.post('/users/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return data
+  },
+
+  async updatePreferences(preferences: UpdatePreferencesData): Promise<{ user: User }> {
+    const { data } = await api.put('/users/preferences', preferences)
+    return data
+  },
+
+  async deleteAccount(): Promise<{ message: string }> {
+    const { data } = await api.delete('/users/account')
     return data
   },
 }

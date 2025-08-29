@@ -29,11 +29,13 @@ const connectDB = async () => {
 
 app.use(helmet());
 app.use(compression());
-app.use(cors({
-  origin: config.cors.origins,
-  credentials: true,
-  optionsSuccessStatus: 200
-}));
+app.use(
+  cors({
+    origin: config.cors.origins,
+    credentials: true,
+    optionsSuccessStatus: 200,
+  })
+);
 // Special handling for Stripe webhooks - needs raw body for signature verification
 app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }));
 
@@ -41,21 +43,23 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
-app.use(session({
-  secret: config.session.secret,
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({
-    mongoUrl: config.mongodb.uri,
-    touchAfter: 24 * 3600
-  }),
-  cookie: {
-    secure: config.isProduction,
-    httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24 * 7,
-    sameSite: config.isProduction ? 'strict' : 'lax'
-  }
-}));
+app.use(
+  session({
+    secret: config.session.secret,
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: config.mongodb.uri,
+      touchAfter: 24 * 3600,
+    }),
+    cookie: {
+      secure: config.isProduction,
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+      sameSite: config.isProduction ? 'strict' : 'lax',
+    },
+  })
+);
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -66,10 +70,10 @@ app.use('/api', rateLimiter);
 app.use('/api', routes);
 
 app.get('/health', (_req, res) => {
-  res.status(200).json({ 
-    status: 'healthy', 
+  res.status(200).json({
+    status: 'healthy',
     timestamp: new Date().toISOString(),
-    environment: config.env 
+    environment: config.env,
   });
 });
 
@@ -81,7 +85,7 @@ app.use((_req, res) => {
 
 const startServer = async () => {
   await connectDB();
-  
+
   app.listen(config.port, () => {
     logger.info(`Server running on port ${config.port} in ${config.env} mode`);
   });

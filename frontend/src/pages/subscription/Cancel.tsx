@@ -33,7 +33,7 @@ export default function SubscriptionCancel() {
               <Link to="/subscription">Manage Subscription</Link>
             </Button>
             <Button asChild variant="ghost" className="w-full">
-              <Link to="/">Go to Dashboard</Link>
+              <Link to="/dashboard">Go to Dashboard</Link>
             </Button>
           </div>
         </CardContent>

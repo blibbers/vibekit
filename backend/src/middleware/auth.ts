@@ -42,7 +42,7 @@ export const hasActiveSubscription = (req: AuthRequest, res: Response, next: Nex
   }
 
   const subscription = req.user?.subscription;
-  
+
   if (!subscription || subscription.status !== 'active') {
     return res.status(403).json({ error: 'Active subscription required' });
   }

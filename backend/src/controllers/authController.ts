@@ -17,11 +17,8 @@ class AuthController {
     }
 
     const emailVerificationToken = crypto.randomBytes(32).toString('hex');
-    
-    const stripeCustomer = await stripeService.createCustomer(
-      email,
-      `${firstName} ${lastName}`
-    );
+
+    const stripeCustomer = await stripeService.createCustomer(email, `${firstName} ${lastName}`);
 
     const user = await User.create({
       email: email.toLowerCase(),
@@ -41,6 +38,12 @@ class AuthController {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        role: user.role,
+        isEmailVerified: user.isEmailVerified,
+        profile: user.profile,
+        preferences: user.preferences,
+        socialLogins: user.socialLogins,
+        subscription: user.subscription,
       },
     });
   });
@@ -55,19 +58,30 @@ class AuthController {
         return res.status(401).json({ error: info?.message || 'Authentication failed' });
       }
 
-      req.logIn(user, (err) => {
+      req.logIn(user, async (err) => {
         if (err) {
           return next(err);
         }
 
+        // Fetch complete user data for login response
+        const fullUser = await User.findById(user._id).select('-password');
+        if (!fullUser) {
+          return next(new AppError('User not found', 404));
+        }
+        
         res.json({
           message: 'Login successful',
           user: {
-            id: user._id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            role: user.role,
+            id: fullUser._id,
+            email: fullUser.email,
+            firstName: fullUser.firstName,
+            lastName: fullUser.lastName,
+            role: fullUser.role,
+            isEmailVerified: fullUser.isEmailVerified,
+            profile: fullUser.profile,
+            preferences: fullUser.preferences,
+            socialLogins: fullUser.socialLogins,
+            subscription: fullUser.subscription,
           },
         });
       });
@@ -94,15 +108,24 @@ class AuthController {
       throw new AppError('User not found', 404);
     }
 
+    // Fetch the complete user data from database to ensure we have all fields
+    const fullUser = await User.findById(req.user._id).select('-password');
+    if (!fullUser) {
+      throw new AppError('User not found', 404);
+    }
+
     res.json({
       user: {
-        id: req.user._id,
-        email: req.user.email,
-        firstName: req.user.firstName,
-        lastName: req.user.lastName,
-        role: req.user.role,
-        isEmailVerified: req.user.isEmailVerified,
-        subscription: req.user.subscription,
+        id: fullUser._id,
+        email: fullUser.email,
+        firstName: fullUser.firstName,
+        lastName: fullUser.lastName,
+        role: fullUser.role,
+        isEmailVerified: fullUser.isEmailVerified,
+        profile: fullUser.profile,
+        preferences: fullUser.preferences,
+        socialLogins: fullUser.socialLogins,
+        subscription: fullUser.subscription,
       },
     });
   });

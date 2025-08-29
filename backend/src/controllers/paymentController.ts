@@ -18,13 +18,13 @@ class PaymentController {
       req.user.stripeCustomerId,
       {
         userId: (req.user._id as any).toString(),
-        ...metadata
+        ...metadata,
       }
     );
 
     res.json({
       clientSecret: paymentIntent.client_secret,
-      paymentIntentId: paymentIntent.id
+      paymentIntentId: paymentIntent.id,
     });
   });
 
@@ -37,7 +37,7 @@ class PaymentController {
 
     const lineItems = items.map((item: any) => ({
       price: item.stripePriceId,
-      quantity: item.quantity
+      quantity: item.quantity,
     }));
 
     const session = await stripeService.createCheckoutSession(
@@ -46,13 +46,13 @@ class PaymentController {
       `${config.frontend.url}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       `${config.frontend.url}/checkout/cancel`,
       {
-        userId: (req.user._id as any).toString()
+        userId: (req.user._id as any).toString(),
       }
     );
 
     res.json({
       sessionId: session.id,
-      url: session.url
+      url: session.url,
     });
   });
 
@@ -75,7 +75,7 @@ class PaymentController {
 
     res.json({
       subscription,
-      clientSecret: (subscription as any).latest_invoice?.payment_intent?.client_secret
+      clientSecret: (subscription as any).latest_invoice?.payment_intent?.client_secret,
     });
   });
 
@@ -92,7 +92,7 @@ class PaymentController {
 
     res.json({
       message: 'Subscription cancelled successfully',
-      subscription
+      subscription,
     });
   });
 }

@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 
 export interface IUser extends Document {
   email: string;
-  password: string;
+  password?: string;
   firstName: string;
   lastName: string;
   role: 'user' | 'admin';
@@ -12,6 +12,20 @@ export interface IUser extends Document {
   passwordResetToken?: string;
   passwordResetExpires?: Date;
   stripeCustomerId?: string;
+  socialLogins?: {
+    apple?: {
+      id: string;
+      email?: string;
+    };
+    google?: {
+      id: string;
+      email?: string;
+    };
+    facebook?: {
+      id: string;
+      email?: string;
+    };
+  };
   subscription?: {
     id: string;
     status: string;
@@ -59,7 +73,9 @@ const userSchema = new Schema<IUser>(
     },
     password: {
       type: String,
-      required: true,
+      required: function(this: IUser) { 
+        return !this.socialLogins?.apple && !this.socialLogins?.google && !this.socialLogins?.facebook;
+      },
       minlength: 8,
     },
     firstName: {
@@ -131,6 +147,20 @@ const userSchema = new Schema<IUser>(
       default: 0,
     },
     lockUntil: Date,
+    socialLogins: {
+      apple: {
+        id: String,
+        email: String,
+      },
+      google: {
+        id: String,
+        email: String,
+      },
+      facebook: {
+        id: String,
+        email: String,
+      },
+    },
   },
   {
     timestamps: true,
@@ -145,7 +175,7 @@ userSchema.virtual('isLocked').get(function (this: IUser) {
 });
 
 userSchema.pre('save', async function (this: IUser, next) {
-  if (!this.isModified('password')) return next();
+  if (!this.isModified('password') || !this.password) return next();
 
   try {
     const salt = await bcrypt.genSalt(10);
@@ -160,6 +190,7 @@ userSchema.methods.comparePassword = async function (
   this: IUser,
   candidatePassword: string
 ): Promise<boolean> {
+  if (!this.password) return false;
   return bcrypt.compare(candidatePassword, this.password);
 };
 

@@ -31,7 +31,7 @@ export function AdminProtectedRoute({ children }: AdminProtectedRouteProps) {
         <div className="text-center">
           <h1 className="text-2xl font-semibold text-gray-900 mb-2">Access Denied</h1>
           <p className="text-gray-600 mb-4">You do not have admin privileges to access this page.</p>
-          <Navigate to="/" replace />
+          <Navigate to="/dashboard" replace />
         </div>
       </div>
     )

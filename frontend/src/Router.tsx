@@ -21,6 +21,7 @@ import SubscriptionManagement from './pages/SubscriptionManagement'
 import SubscriptionPlans from './pages/subscription/Plans'
 import SubscriptionSuccess from './pages/subscription/Success'
 import SubscriptionCancel from './pages/subscription/Cancel'
+import Account from './pages/Account'
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
     const { isAuthenticated, user, isLoading } = useAuth()
@@ -38,7 +39,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
         if (!user?.isEmailVerified) {
             return <Navigate to="/verify-email-pending" replace />
         }
-        return <Navigate to="/" replace />
+        return <Navigate to="/dashboard" replace />
     }
     
     return <>{children}</>
@@ -91,11 +92,12 @@ export default function Router() {
                     <AppLayout />
                 </ProtectedRoute>
             }>
-                <Route path="" element={<Dashboard />} />
+                <Route path="dashboard" element={<Dashboard />} />
                 <Route path="pages">
                     <Route path="sample" element={<Sample />} />
                     <Route path="feature" element={<ComingSoon />} />
                 </Route>
+                <Route path="account" element={<Account />} />
                 <Route path="subscription" element={<SubscriptionManagement />} />
                 <Route path="subscription/plans" element={<SubscriptionPlans />} />
             </Route>

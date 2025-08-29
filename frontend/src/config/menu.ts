@@ -17,7 +17,7 @@ type MenuType = MenuItemType[]
 export const mainMenu: MenuType = [
     {
         title: 'Dashboard',
-        url: '/',
+        url: '/dashboard',
         icon: Gauge
     },
     {

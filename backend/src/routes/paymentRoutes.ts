@@ -9,10 +9,7 @@ const router = Router();
 router.post(
   '/create-payment-intent',
   isAuthenticated,
-  validate([
-    body('amount').isFloat({ min: 0 }),
-    body('currency').optional().isString(),
-  ]),
+  validate([body('amount').isFloat({ min: 0 }), body('currency').optional().isString()]),
   paymentController.createPaymentIntent
 );
 

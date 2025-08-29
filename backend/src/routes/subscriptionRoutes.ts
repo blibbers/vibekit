@@ -16,7 +16,11 @@ router.get('/invoices', isAuthenticated as any, subscriptionController.getInvoic
 router.get('/payment-methods', isAuthenticated as any, subscriptionController.getPaymentMethods);
 
 // Create setup intent for adding payment method
-router.post('/payment-methods/setup-intent', isAuthenticated as any, subscriptionController.createSetupIntent);
+router.post(
+  '/payment-methods/setup-intent',
+  isAuthenticated as any,
+  subscriptionController.createSetupIntent
+);
 
 // Add a payment method
 router.post(
@@ -27,7 +31,11 @@ router.post(
 );
 
 // Remove a payment method
-router.delete('/payment-methods/:id', isAuthenticated as any, subscriptionController.removePaymentMethod);
+router.delete(
+  '/payment-methods/:id',
+  isAuthenticated as any,
+  subscriptionController.removePaymentMethod
+);
 
 // Set default payment method
 router.put(
@@ -42,22 +50,28 @@ router.post(
   isAuthenticated as any,
   validate([
     body('priceId').notEmpty().withMessage('Price ID is required'),
-    body('successUrl').notEmpty().withMessage('Success URL is required').custom((value) => {
-      try {
-        new URL(value);
-        return true;
-      } catch {
-        throw new Error('Invalid success URL format');
-      }
-    }),
-    body('cancelUrl').notEmpty().withMessage('Cancel URL is required').custom((value) => {
-      try {
-        new URL(value);
-        return true;
-      } catch {
-        throw new Error('Invalid cancel URL format');
-      }
-    })
+    body('successUrl')
+      .notEmpty()
+      .withMessage('Success URL is required')
+      .custom((value) => {
+        try {
+          new URL(value);
+          return true;
+        } catch {
+          throw new Error('Invalid success URL format');
+        }
+      }),
+    body('cancelUrl')
+      .notEmpty()
+      .withMessage('Cancel URL is required')
+      .custom((value) => {
+        try {
+          new URL(value);
+          return true;
+        } catch {
+          throw new Error('Invalid cancel URL format');
+        }
+      }),
   ]),
   subscriptionController.createSubscriptionCheckout
 );

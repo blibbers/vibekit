@@ -4,10 +4,6 @@ import { stripeWebhookRateLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
 
-router.post(
-  '/stripe',
-  stripeWebhookRateLimiter,
-  webhookController.handleStripeWebhook
-);
+router.post('/stripe', stripeWebhookRateLimiter, webhookController.handleStripeWebhook);
 
 export default router;

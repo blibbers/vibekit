@@ -3,6 +3,7 @@ import { body } from 'express-validator';
 import { userController } from '../controllers/userController';
 import { validate } from '../middleware/validation';
 import { isAuthenticated, isAdmin } from '../middleware/auth';
+import { uploadToS3 } from '../config/s3';
 
 const router = Router();
 
@@ -17,6 +18,22 @@ router.put(
     body('phone').optional().isMobilePhone('any'),
   ]),
   userController.updateProfile
+);
+router.post(
+  '/avatar',
+  isAuthenticated as any,
+  uploadToS3.single('avatar'),
+  userController.uploadAvatar
+);
+router.put(
+  '/preferences',
+  isAuthenticated as any,
+  validate([
+    body('notifications.email').optional().isBoolean(),
+    body('notifications.push').optional().isBoolean(),
+    body('theme').optional().isIn(['light', 'dark']),
+  ]),
+  userController.updatePreferences
 );
 router.delete('/account', isAuthenticated as any, userController.deleteAccount);
 

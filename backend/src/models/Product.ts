@@ -54,16 +54,22 @@ const productSchema = new Schema<IProduct>(
       required: true,
       index: true,
     },
-    tags: [{
-      type: String,
-      trim: true,
-    }],
-    images: [{
-      type: String,
-    }],
-    features: [{
-      type: String,
-    }],
+    tags: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    images: [
+      {
+        type: String,
+      },
+    ],
+    features: [
+      {
+        type: String,
+      },
+    ],
     stock: {
       type: Number,
       default: 0,
@@ -89,7 +95,7 @@ const productSchema = new Schema<IProduct>(
     billingType: {
       type: String,
       enum: ['one_time', 'recurring'],
-      required: function() {
+      required: function () {
         return !this.isFree;
       },
       default: 'recurring',
@@ -97,7 +103,7 @@ const productSchema = new Schema<IProduct>(
     billingInterval: {
       type: String,
       enum: ['day', 'week', 'month', 'year'],
-      required: function() {
+      required: function () {
         return !this.isFree && this.billingType === 'recurring';
       },
     },
@@ -105,7 +111,7 @@ const productSchema = new Schema<IProduct>(
       type: Number,
       min: 1,
       default: 1,
-      required: function() {
+      required: function () {
         return !this.isFree && this.billingType === 'recurring';
       },
     },

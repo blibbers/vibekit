@@ -12,7 +12,7 @@ class ProductController {
       search,
       page = 1,
       limit = 10,
-      sort = '-createdAt'
+      sort = '-createdAt',
     } = req.query;
 
     const query: any = { isActive: true };
@@ -46,14 +46,14 @@ class ProductController {
         total,
         page: Number(page),
         pages: Math.ceil(total / Number(limit)),
-        limit: Number(limit)
-      }
+        limit: Number(limit),
+      },
     });
   });
 
   getProductById = asyncHandler(async (req: Request, res: Response) => {
     const product = await Product.findById(req.params.id);
-    
+
     if (!product) {
       throw new AppError('Product not found', 404);
     }
@@ -62,15 +62,15 @@ class ProductController {
   });
 
   createProduct = asyncHandler(async (req: Request, res: Response) => {
-    const { 
-      name, 
-      description, 
-      price = 0, 
+    const {
+      name,
+      description,
+      price = 0,
       isFree = false,
       billingType = 'recurring',
       billingInterval = 'month',
       billingIntervalCount = 1,
-      features = []
+      features = [],
     } = req.body;
 
     let stripeProductId = null;
@@ -80,19 +80,14 @@ class ProductController {
     if (!isFree && price > 0) {
       const stripeProduct = await stripeService.createProduct(name, description);
       stripeProductId = stripeProduct.id;
-      
+
       // Create recurring or one-time price based on billingType
       let stripePrice;
       if (billingType === 'recurring') {
-        stripePrice = await stripeService.createPrice(
-          stripeProduct.id, 
-          price, 
-          'usd',
-          {
-            interval: billingInterval,
-            interval_count: billingIntervalCount
-          }
-        );
+        stripePrice = await stripeService.createPrice(stripeProduct.id, price, 'usd', {
+          interval: billingInterval,
+          interval_count: billingIntervalCount,
+        });
       } else {
         stripePrice = await stripeService.createPrice(stripeProduct.id, price);
       }
@@ -105,10 +100,11 @@ class ProductController {
       price: isFree ? 0 : price,
       billingType: isFree ? undefined : billingType,
       billingInterval: isFree || billingType !== 'recurring' ? undefined : billingInterval,
-      billingIntervalCount: isFree || billingType !== 'recurring' ? undefined : billingIntervalCount,
-      features: Array.isArray(features) ? features.filter(f => f && f.trim()) : [],
+      billingIntervalCount:
+        isFree || billingType !== 'recurring' ? undefined : billingIntervalCount,
+      features: Array.isArray(features) ? features.filter((f) => f && f.trim()) : [],
       stripeProductId,
-      stripePriceId
+      stripePriceId,
     });
 
     res.status(201).json({ product });
@@ -121,15 +117,14 @@ class ProductController {
     const processedUpdateData = {
       ...updateData,
       ...(features !== undefined && {
-        features: Array.isArray(features) ? features.filter(f => f && f.trim()) : []
-      })
+        features: Array.isArray(features) ? features.filter((f) => f && f.trim()) : [],
+      }),
     };
 
-    const product = await Product.findByIdAndUpdate(
-      req.params.id,
-      processedUpdateData,
-      { new: true, runValidators: true }
-    );
+    const product = await Product.findByIdAndUpdate(req.params.id, processedUpdateData, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!product) {
       throw new AppError('Product not found', 404);

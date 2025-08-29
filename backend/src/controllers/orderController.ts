@@ -43,8 +43,8 @@ class OrderController {
         total,
         page: Number(page),
         pages: Math.ceil(total / Number(limit)),
-        limit: Number(limit)
-      }
+        limit: Number(limit),
+      },
     });
   });
 
@@ -54,7 +54,7 @@ class OrderController {
     }
 
     const query: any = { _id: req.params.id };
-    
+
     if (req.user.role !== 'admin') {
       query.user = req.user._id;
     }
@@ -82,7 +82,7 @@ class OrderController {
 
     for (const item of items) {
       const product = await Product.findById(item.product);
-      
+
       if (!product) {
         throw new AppError(`Product ${item.product} not found`, 404);
       }
@@ -98,7 +98,7 @@ class OrderController {
         product: product._id,
         quantity: item.quantity,
         price: product.price,
-        total: itemTotal
+        total: itemTotal,
       });
 
       product.stock -= item.quantity;
@@ -118,12 +118,12 @@ class OrderController {
       total,
       shippingAddress,
       billingAddress,
-      paymentMethod
+      paymentMethod,
     });
 
     await emailService.sendOrderConfirmation(req.user.email, {
       orderNumber: order.orderNumber,
-      total: order.total
+      total: order.total,
     });
 
     res.status(201).json({ order });
@@ -134,10 +134,10 @@ class OrderController {
 
     const order = await Order.findByIdAndUpdate(
       req.params.id,
-      { 
+      {
         status,
         ...(status === 'shipped' && { shippedAt: new Date() }),
-        ...(status === 'delivered' && { deliveredAt: new Date() })
+        ...(status === 'delivered' && { deliveredAt: new Date() }),
       },
       { new: true }
     );
@@ -155,7 +155,7 @@ class OrderController {
     }
 
     const query: any = { _id: req.params.id };
-    
+
     if (req.user.role !== 'admin') {
       query.user = req.user._id;
     }

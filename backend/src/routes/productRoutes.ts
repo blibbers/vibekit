@@ -29,8 +29,8 @@ router.post(
 );
 
 router.put(
-  '/:id', 
-  isAdmin as any, 
+  '/:id',
+  isAdmin as any,
   validate([
     body('name').optional().notEmpty().trim(),
     body('description').optional().notEmpty(),
@@ -43,7 +43,7 @@ router.put(
     body('billingIntervalCount').optional().isInt({ min: 1 }),
     body('features').optional().isArray(),
     body('features.*').optional().isString().trim(),
-  ]), 
+  ]),
   productController.updateProduct
 );
 router.delete('/:id', isAdmin as any, productController.deleteProduct);

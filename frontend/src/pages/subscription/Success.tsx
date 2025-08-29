@@ -67,7 +67,7 @@ export default function SubscriptionSuccess() {
               <Link to="/subscription">Manage Subscription</Link>
             </Button>
             <Button asChild variant="outline" className="w-full">
-              <Link to="/">Go to Dashboard</Link>
+              <Link to="/dashboard">Go to Dashboard</Link>
             </Button>
           </div>
 
